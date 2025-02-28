@@ -17,3 +17,5 @@ Will be added very soon..
 - Adding RSA encryption for the entries, requiring first-time user to set a password.
 - Sorting buttons for the entries.
 - Adding a search bar for the entries.
+- Cleaning the scripts for a better C++ structure.
+- Creating a basic setup for Linux machines, with config file for variables.
