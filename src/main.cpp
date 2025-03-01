@@ -9,6 +9,7 @@
 #include <QKeyEvent>
 #include <QFont>
 #include <QInputDialog>
+#include <QFile>
 
 #include <openssl/evp.h>
 #include <openssl/pem.h>
@@ -54,26 +55,31 @@ struct Entry {
 };
 
 const std::string CONFIG_FILE = "/etc/diary.conf";
-std::string get_entry_directory() {
+std::string get_conf(std::string key) {
   std::ifstream config_file(CONFIG_FILE);
   std::string line;
   while (std::getline(config_file, line)) {
-    if (line.find("user_data_dir=") == 0) {
-      std::string dir = line.substr(14);
+    if (line.substr(0, key.size()) == key && (line[key.size()] == '=' || line[key.size()] == ' ')) {
+      std::string value = line.substr(key.size() + 1);
       // replace ~ with home directory if found
-      if (dir[0] == '~') {
-        dir.replace(0, 1, std::getenv("HOME"));
+      if (value[0] == '~') {
+        value.replace(0, 1, std::getenv("HOME"));
       }
-      return dir;
+      return value;
     }
   }
   return std::string(std::getenv("HOME")) + "/.diary_a"; // Default entry directory if not found
 }
 
-const std::string user_data_dir = get_entry_directory();
-const std::string entry_dir = user_data_dir + "/entries";
-const std::string public_key_path = user_data_dir + "/public_key.pem";
-const std::string private_key_path = user_data_dir + "/private_key.pem";
+const std::string user_data_dir = get_conf("user_data_dir");
+const std::string entry_dir = get_conf("entry_dir");
+const std::string styles_dir = get_conf("styles_dir");
+const std::string style = get_conf("style");
+const std::string style_path = styles_dir + "/" + style;
+const std::string public_key_path = get_conf("public_key");
+const std::string private_key_path = get_conf("private_key");
+
+
 std::vector<Entry> entries;
 
 
@@ -308,10 +314,13 @@ int main(int argc, char *argv[]) {
       // Add new entries
       for (const Entry &entry : entries) {
         QWidget *entryWidget = new QWidget;
+        entryWidget->setObjectName("entryWidget");
         QVBoxLayout *entryLayout = new QVBoxLayout(entryWidget);
         QLabel *dateLabel = new QLabel(QString::fromStdString(entry.date));
+        dateLabel->setObjectName("dateLabel");
         entryLayout->addWidget(dateLabel);
         QLabel *entryLabel = new QLabel(parseMarkdown(QString::fromStdString(entry.content)));
+        entryLabel->setObjectName("entryLabel");
         entryLabel->setWordWrap(true);
         entryLayout->addWidget(entryLabel);
         entryContainerLayout->addWidget(entryWidget);
@@ -326,12 +335,21 @@ int main(int argc, char *argv[]) {
     }
   });
 
-  window.setLayout(layout);
-  window.resize(600, 400);
+  // Load the default style sheet
+  QFile file(style_path.c_str());
+  if (file.open(QFile::ReadOnly)) {
+    QString styleSheet = file.readAll();
+    app.setStyleSheet(styleSheet);
+    file.close();
+  }
 
   KeyPressFilter *filter = new KeyPressFilter(toggleButton, saveButton);
   window.installEventFilter(filter);
+  window.setLayout(layout);
+  window.resize(600, 400);
   window.show();
+
+  // At last, get entries which will prompt for password
   getEntries();
 
   return app.exec();
