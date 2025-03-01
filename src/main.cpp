@@ -10,7 +10,6 @@
 #include <QFont>
 #include <QInputDialog>
 
-
 #include <openssl/evp.h>
 #include <openssl/pem.h>
 
@@ -25,7 +24,7 @@
 
 class KeyPressFilter : public QObject {
   public:
-    KeyPressFilter(QPushButton *button) : button(button) {}
+    KeyPressFilter(QPushButton *toggle_button, QPushButton *enter_button) : toggle_button(toggle_button), enter_button(enter_button) {}
 
     bool eventFilter(QObject *obj, QEvent *event) override {
       if (event->type() == QEvent::KeyPress) {
@@ -34,7 +33,10 @@ class KeyPressFilter : public QObject {
           static_cast<QWidget *>(obj)->close();  // Close the window when ESC is pressed
           return true;  // Event handled
         } else if (keyEvent->key() == Qt::Key_Alt) {
-          button->click();  // Simulate a button click when D is pressed
+          toggle_button->click();
+          return true;  // Event handled
+        } else if (keyEvent->key() == Qt::Key_Return) {
+          enter_button->click();
           return true;  // Event handled
         }
       }
@@ -42,7 +44,8 @@ class KeyPressFilter : public QObject {
     }
 
   private:
-    QPushButton *button;
+    QPushButton *toggle_button;
+    QPushButton *enter_button;
   };
 
 struct Entry {
@@ -326,7 +329,7 @@ int main(int argc, char *argv[]) {
   window.setLayout(layout);
   window.resize(600, 400);
 
-  KeyPressFilter *filter = new KeyPressFilter(toggleButton);
+  KeyPressFilter *filter = new KeyPressFilter(toggleButton, saveButton);
   window.installEventFilter(filter);
   window.show();
   getEntries();
