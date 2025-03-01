@@ -1,0 +1,85 @@
+/*
+Background: 060425
+Border: 7f3fbf
+Text: abdde1
+Secondary Text: 7f3fbf
+Red Text: ff7f7f
+*/
+
+/* Set the default values */
+QWidget {
+  background-color: #060425;
+  color: #abdde1;
+  font-family: 'Noto Sans';
+  padding: 0px;
+  margin: 0px;
+}
+
+
+#entryWidget {
+  border-bottom: 1px solid #7f3fbf;
+  font-size: 13px;
+}
+
+#dateLabel {
+  color: #ff7f7f;
+}
+
+#entryLabel {
+
+}
+
+/* TextEdit */
+QTextEdit {
+  border: 1px solid #7f3fbf;
+  font-size: 13px;
+}
+
+/* Scroll Area, Bar and Handle */
+QScrollArea {
+  border: 1px solid #7f3fbf;
+}
+
+QScrollBar:vertical {
+  border: none;
+  background: #060425; /* Light background */
+  width: 2px; /* Width of the scrollbar */
+}
+
+QScrollBar::handle:vertical {
+  background: #abdde1; /* Scroll handle color */
+  min-height: 15px; /* Minimum height */
+}
+
+QScrollBar::handle:vertical:hover {
+  background: #7f3fbf; /* Darker color when hovered */
+}
+
+QScrollBar::handle:vertical:pressed {
+  background: #abdde1; /* Even darker when pressed */
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+  background: none; /* Hide the up/down buttons */
+  border: none;
+}
+
+
+/* Buttons */
+QPushButton {
+  background-color: #060425;
+  border: 1px solid #7f3fbf;
+  color: white;
+  padding: 4px 20px;
+  font-weight: bold;
+}
+
+QPushButton:hover {
+  background-color: #7f3fbf;
+}
+
+QPushButton:pressed {
+  background-color: #060425;
+}
+
