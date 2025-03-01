@@ -49,6 +49,8 @@ ship: $(OUTPUT)
 	@cp $(OUTPUT) $(STABLE_OUTPUT)
 	@echo "Shipped $(OUTPUT) to $(STABLE_OUTPUT)"
 
+stable: $(STABLE_OUTPUT)
+	./$(STABLE_OUTPUT)
 
 # Installation process with key & config generation
 install: $(STABLE_OUTPUT)
