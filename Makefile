@@ -1,6 +1,6 @@
 # Compiler
 CXX = g++
-CXXFLAGS = -std=c++17 -fPIC `pkg-config --cflags Qt6Widgets`
+CXXFLAGS = -std=c++17 -fPIC -I./include `pkg-config --cflags Qt6Widgets`
 LDFLAGS = `pkg-config --libs Qt6Widgets` -lssl -lcrypto
 
 # Colors
@@ -16,9 +16,10 @@ BOLD := \033[1m
 RESET := \033[0m
 
 # Source files
-SRC = src/main.cpp
+SRC_DIR = src
 BUILD_DIR = build
-OBJ = $(SRC:src/%.cpp=$(BUILD_DIR)/%.o)
+SRCS = $(wildcard $(SRC_DIR)/*.cpp)
+OBJ = $(SRCS:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
 STYLES = $(wildcard styles/*.qss)
 DEFAULT_STYLE = lazygit.qss
 ASSETS = assets
@@ -70,7 +71,7 @@ $(OUTPUT): $(OBJ)
 	@echo -e "$(GREEN)Build complete!$(RESET)"
 
 # Compile source files to build directory
-$(BUILD_DIR)/%.o: src/%.cpp
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(BUILD_DIR)
 	@echo -e "$(CYAN)Compiling $<...$(RESET)"
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
@@ -81,6 +82,7 @@ ship: $(OUTPUT)
 	@cp $(OUTPUT) $(STABLE_OUTPUT)
 	@echo -e "$(GREEN)Shipped $(OUTPUT) to $(STABLE_OUTPUT)$(RESET)"
 
+# Run the stable version
 stable: $(STABLE_OUTPUT)
 	@echo -e "$(GREEN)Running stable version...$(RESET)"
 	./$(STABLE_OUTPUT)
@@ -126,6 +128,18 @@ check-version:
 
 # Installation process with key & config generation
 install: $(STABLE_OUTPUT)
+	@if [ -f $(CONFIG_FILE) ]; then \
+		echo -e "$(RED)Warning: Application is already installed!$(RESET)"; \
+		echo -e "$(RED)Reinstalling will delete all existing diary entries and configuration.$(RESET)"; \
+		echo -e "$(YELLOW)Do you want to continue? (y/N) $(RESET)"; \
+		read -p "" RESP; \
+		if [ "$$RESP" != "y" ] && [ "$$RESP" != "Y" ]; then \
+			echo -e "$(YELLOW)Installation cancelled.$(RESET)"; \
+			exit 1; \
+		fi; \
+		echo -e "$(CYAN)Proceeding with reinstallation...$(RESET)"; \
+	fi
+
 	@echo -e "$(CYAN)Creating user data directory...$(RESET)"
 	@mkdir -p $(USER_DATA_DIR)
 	@mkdir -p $(USER_ENTRY_DIR)
@@ -202,5 +216,7 @@ uninstall:
 # Clean build files
 clean:
 	@echo -e "$(CYAN)Cleaning build files...$(RESET)"
-	rm -f $(OBJ) $(OUTPUT)
+	rm -rf $(BUILD_DIR)/* $(BIN_DIR)/*
 	@echo -e "$(GREEN)Clean complete!$(RESET)"
+
+.PHONY: all clean
